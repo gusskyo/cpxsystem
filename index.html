@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CPX SYSTEM</title>
+
+  <!-- FONTE TECH -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      background: radial-gradient(circle at top, #0a0a0a, #000000);
+      color: white;
+      font-family: 'Orbitron', sans-serif;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 40px;
+      color: #ff0077;
+      text-shadow: 0 0 10px #ff0077, 0 0 20px #ff0077;
+    }
+
+    button {
+      background: linear-gradient(45deg, #ff0077, #ff3399);
+      border: none;
+      padding: 12px 25px;
+      color: white;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 0 15px #ff0077;
+      transition: 0.2s;
+      margin-bottom: 20px;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px #ff0077;
+    }
+
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 95%;
+      background: rgba(10, 10, 10, 0.9);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 20px #ff0077;
+    }
+
+    th {
+      padding: 12px;
+      color: #ff0077;
+      text-shadow: 0 0 5px #ff0077;
+      background: #0d0d0d;
+    }
+
+    td {
+      padding: 10px;
+      border: 1px solid #222;
+    }
+
+    input {
+      width: 70px;
+      background: transparent;
+      border: none;
+      color: white;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .red {
+      background: rgba(255, 0, 0, 0.2);
+      box-shadow: inset 0 0 10px red;
+    }
+
+    .yellow {
+      background: rgba(255, 200, 0, 0.2);
+      box-shadow: inset 0 0 10px gold;
+    }
+
+    .green {
+      background: rgba(0, 255, 100, 0.2);
+      box-shadow: inset 0 0 10px lime;
+    }
+
+    h2 {
+      color: #ff0077;
+      text-shadow: 0 0 10px #ff0077;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>CPX SYSTEM</h1>
+
+<button onclick="criarMembro()">+ ADICIONAR</button>
+
+<div id="tabela"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDO-yQntq0yqyLQvM4cCPt0Ap7ZwuffwP4",
+  authDomain: "controle-cpx.firebaseapp.com",
+  projectId: "controle-cpx"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// CRIAR MEMBRO
+window.criarMembro = async function () {
+  const nome = prompt("Nome:");
+  let tipo = prompt("membro ou elite?");
+
+  if (!nome || !tipo) return alert("Preencha tudo!");
+
+  tipo = tipo.toLowerCase();
+  let meta = tipo === "elite" ? 2500000 : 10000;
+
+  await addDoc(collection(db, "membros"), {
+    nome,
+    tipo,
+    meta,
+    seg: 0,
+    ter: 0,
+    qua: 0,
+    qui: 0,
+    sex: 0,
+    sab: 0,
+    dom: 0
+  });
+
+  carregarMembros();
+};
+
+// CORES
+function getCor(valor, total, meta) {
+  if (valor === 0) return "red";
+  if (total >= meta) return "green";
+  return "yellow";
+}
+
+// ATUALIZAR
+window.atualizarValor = async function(id, campo, valor) {
+  const ref = doc(db, "membros", id);
+  await updateDoc(ref, {
+    [campo]: Number(valor)
+  });
+  carregarMembros();
+};
+
+// TABELA
+async function carregarMembros() {
+  const querySnapshot = await getDocs(collection(db, "membros"));
+
+  let membrosHTML = montarTabela("MEMBROS", "membro", querySnapshot);
+  let eliteHTML = montarTabela("ELITE", "elite", querySnapshot);
+
+  document.getElementById("tabela").innerHTML = membrosHTML + eliteHTML;
+}
+
+function montarTabela(titulo, tipoFiltro, querySnapshot) {
+  let html = `<h2>${titulo}</h2><table>`;
+  html += `<tr>
+    <th>Nome</th>
+    <th>Seg</th><th>Ter</th><th>Qua</th><th>Qui</th>
+    <th>Sex</th><th>Sab</th><th>Dom</th>
+    <th>Total</th>
+  </tr>`;
+
+  querySnapshot.forEach((docSnap) => {
+    const d = docSnap.data();
+    if (d.tipo !== tipoFiltro) return;
+
+    const id = docSnap.id;
+    const dias = ["seg","ter","qua","qui","sex","sab","dom"];
+
+    let total = 0;
+    dias.forEach(dia => total += (d[dia] || 0));
+
+    html += `<tr><td>${d.nome}</td>`;
+
+    dias.forEach(dia => {
+      const valor = d[dia] || 0;
+      const cor = getCor(valor, total, d.meta);
+
+      html += `<td class="${cor}">
+        <input type="number" value="${valor}"
+        onchange="atualizarValor('${id}','${dia}', this.value)">
+      </td>`;
+    });
+
+    const corTotal = total >= d.meta ? "green" : "yellow";
+
+    html += `<td class="${corTotal}">${total}</td></tr>`;
+  });
+
+  html += "</table>";
+  return html;
+}
+
+// INICIAR
+carregarMembros();
+</script>
+
+</body>
+</html>
