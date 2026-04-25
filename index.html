@@ -62,7 +62,6 @@
     .yellow { background: #332200; }
     .green { background: #002200; }
 
-    /* MODAIS */
     .modal {
       position: fixed;
       top: 0;
@@ -73,6 +72,7 @@
       display: none;
       justify-content: center;
       align-items: center;
+      z-index: 9998;
     }
 
     .modal-content {
@@ -102,10 +102,50 @@
       background: #ff0077;
       color: black;
     }
+
+    #loginScreen {
+      position: fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:#000;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      z-index:9999;
+    }
+
+    .login-box {
+      background:#050505;
+      border:1px solid #ff0077;
+      padding:30px;
+      box-shadow:0 0 20px #ff0077;
+    }
+
+    .login-box input {
+      margin-top:10px;
+      padding:10px;
+      background:black;
+      border:1px solid #ff0077;
+      color:white;
+      width:200px;
+    }
   </style>
 </head>
 
 <body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h2 style="color:#ff0077;">CPX ACCESS</h2>
+    <input type="password" id="senhaInput" placeholder="Senha">
+    <br><br>
+    <button onclick="verificarSenha()">Entrar</button>
+    <p id="erro" style="color:red; display:none;">Senha incorreta</p>
+  </div>
+</div>
 
 <h1>CPX SYSTEM</h1>
 
@@ -122,7 +162,6 @@
       <option value="membro">Membro</option>
       <option value="elite">Elite</option>
     </select>
-
     <button onclick="salvarMembro()">Salvar</button>
     <button class="cancelar" onclick="fecharModal()">Cancelar</button>
   </div>
@@ -132,7 +171,6 @@
 <div class="modal" id="modalRemover">
   <div class="modal-content">
     <h3 id="textoRemover"></h3>
-
     <button onclick="confirmarRemocao()">Remover</button>
     <button class="cancelar" onclick="fecharRemover()">Cancelar</button>
   </div>
@@ -151,13 +189,21 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// MODAIS
+const SENHA = "resplav2671";
+
+window.verificarSenha = function() {
+  const senha = document.getElementById("senhaInput").value;
+  if (senha === SENHA) {
+    document.getElementById("loginScreen").style.display = "none";
+  } else {
+    document.getElementById("erro").style.display = "block";
+  }
+};
+
 window.abrirModal = () => document.getElementById("modal").style.display = "flex";
 window.fecharModal = () => document.getElementById("modal").style.display = "none";
-
 window.fecharRemover = () => document.getElementById("modalRemover").style.display = "none";
 
-// CRIAR
 window.salvarMembro = async function () {
   const nome = document.getElementById("nome").value;
   const tipo = document.getElementById("tipo").value;
@@ -183,7 +229,6 @@ window.salvarMembro = async function () {
   carregarMembros();
 };
 
-// REMOVER COM MODAL
 let idParaRemover = null;
 
 window.removerMembro = function(id, nome) {
@@ -194,21 +239,22 @@ window.removerMembro = function(id, nome) {
 
 window.confirmarRemocao = async function() {
   if (!idParaRemover) return;
-
   await deleteDoc(doc(db, "membros", idParaRemover));
-
   fecharRemover();
   carregarMembros();
 };
 
-// CORES
-function getCor(valor, total, meta) {
+// 🎨 NOVA REGRA DE COR POR DIA
+function getCor(valor, tipo) {
   if (valor === 0) return "red";
-  if (total >= meta) return "green";
+
+  const metaDia = tipo === "elite" ? 500000 : 2000;
+
+  if (valor >= metaDia) return "green";
+
   return "yellow";
 }
 
-// ATUALIZAR
 window.atualizarValor = async function(id, campo, valor) {
   await updateDoc(doc(db, "membros", id), {
     [campo]: Number(valor)
@@ -216,7 +262,6 @@ window.atualizarValor = async function(id, campo, valor) {
   carregarMembros();
 };
 
-// TABELA
 async function carregarMembros() {
   const querySnapshot = await getDocs(collection(db, "membros"));
 
@@ -250,7 +295,7 @@ function montarTabela(titulo, tipoFiltro, querySnapshot) {
 
     dias.forEach(dia => {
       const valor = d[dia] || 0;
-      const cor = getCor(valor, total, d.meta);
+      const cor = getCor(valor, d.tipo);
 
       html += `<td class="${cor}">
         <input type="number" value="${valor}"
