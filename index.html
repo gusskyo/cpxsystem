@@ -7,48 +7,43 @@
 
   <style>
     body {
-      background: radial-gradient(circle at top, #0a0a0a, #000000);
+      background: #000;
       color: white;
       font-family: 'Orbitron', sans-serif;
       text-align: center;
     }
 
     h1 {
-      font-size: 40px;
       color: #ff0077;
-      text-shadow: 0 0 10px #ff0077, 0 0 20px #ff0077;
+      text-shadow: 0 0 15px #ff0077;
     }
 
     button {
-      background: linear-gradient(45deg, #ff0077, #ff3399);
-      border: none;
-      padding: 12px 20px;
-      color: white;
-      border-radius: 10px;
+      background: #0a0a0a;
+      border: 1px solid #ff0077;
+      color: #ff0077;
+      padding: 10px 20px;
       cursor: pointer;
-      box-shadow: 0 0 15px #ff0077;
+      box-shadow: 0 0 10px #ff0077;
       margin: 5px;
     }
 
     button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 25px #ff0077;
+      background: #ff0077;
+      color: black;
     }
 
     table {
       margin: 20px auto;
       border-collapse: collapse;
       width: 95%;
-      background: rgba(10, 10, 10, 0.9);
-      box-shadow: 0 0 20px #ff0077;
-      border-radius: 10px;
-      overflow: hidden;
+      background: #050505;
+      box-shadow: 0 0 15px #ff0077;
     }
 
     th, td {
       padding: 8px;
-      border: 1px solid #222;
-      text-align: center;
+      border: 1px solid #111;
     }
 
     th {
@@ -56,20 +51,56 @@
     }
 
     input {
-      width: 60px;
       background: transparent;
       border: none;
       color: white;
+      width: 60px;
       text-align: center;
     }
 
-    .red { background: rgba(255,0,0,0.2); }
-    .yellow { background: rgba(255,200,0,0.2); }
-    .green { background: rgba(0,255,100,0.2); }
+    .red { background: #220000; }
+    .yellow { background: #332200; }
+    .green { background: #002200; }
 
-    .remove-btn {
-      background: red;
-      box-shadow: 0 0 10px red;
+    /* MODAIS */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: #050505;
+      border: 1px solid #ff0077;
+      padding: 25px;
+      box-shadow: 0 0 20px #ff0077;
+      width: 300px;
+    }
+
+    .modal input, .modal select {
+      width: 100%;
+      margin: 10px 0;
+      padding: 8px;
+      background: black;
+      border: 1px solid #ff0077;
+      color: white;
+    }
+
+    .cancelar {
+      background: #111;
+      color: #ff0077;
+      border: 1px solid #ff0077;
+    }
+
+    .cancelar:hover {
+      background: #ff0077;
+      color: black;
     }
   </style>
 </head>
@@ -78,9 +109,34 @@
 
 <h1>CPX SYSTEM</h1>
 
-<button onclick="criarMembro()">+ ADICIONAR</button>
+<button onclick="abrirModal()">+ ADICIONAR</button>
 
 <div id="tabela"></div>
+
+<!-- MODAL ADICIONAR -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h3>Adicionar Membro</h3>
+    <input type="text" id="nome" placeholder="Nome">
+    <select id="tipo">
+      <option value="membro">Membro</option>
+      <option value="elite">Elite</option>
+    </select>
+
+    <button onclick="salvarMembro()">Salvar</button>
+    <button class="cancelar" onclick="fecharModal()">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL REMOVER -->
+<div class="modal" id="modalRemover">
+  <div class="modal-content">
+    <h3 id="textoRemover"></h3>
+
+    <button onclick="confirmarRemocao()">Remover</button>
+    <button class="cancelar" onclick="fecharRemover()">Cancelar</button>
+  </div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -95,14 +151,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ➕ CRIAR MEMBRO
-window.criarMembro = async function () {
-  const nome = prompt("Nome:");
-  let tipo = prompt("membro ou elite?");
+// MODAIS
+window.abrirModal = () => document.getElementById("modal").style.display = "flex";
+window.fecharModal = () => document.getElementById("modal").style.display = "none";
 
-  if (!nome || !tipo) return alert("Preencha tudo!");
+window.fecharRemover = () => document.getElementById("modalRemover").style.display = "none";
 
-  tipo = tipo.toLowerCase();
+// CRIAR
+window.salvarMembro = async function () {
+  const nome = document.getElementById("nome").value;
+  const tipo = document.getElementById("tipo").value;
+
+  if (!nome) return;
+
   let meta = tipo === "elite" ? 2500000 : 10000;
 
   await addDoc(collection(db, "membros"), {
@@ -118,26 +179,36 @@ window.criarMembro = async function () {
     dom: 0
   });
 
+  fecharModal();
   carregarMembros();
 };
 
-// ❌ REMOVER MEMBRO
-window.removerMembro = async function(id) {
-  const confirmar = confirm("Tem certeza que deseja remover?");
-  if (!confirmar) return;
+// REMOVER COM MODAL
+let idParaRemover = null;
 
-  await deleteDoc(doc(db, "membros", id));
+window.removerMembro = function(id, nome) {
+  idParaRemover = id;
+  document.getElementById("textoRemover").innerText = "Remover " + nome + "?";
+  document.getElementById("modalRemover").style.display = "flex";
+};
+
+window.confirmarRemocao = async function() {
+  if (!idParaRemover) return;
+
+  await deleteDoc(doc(db, "membros", idParaRemover));
+
+  fecharRemover();
   carregarMembros();
 };
 
-// 🎨 CORES
+// CORES
 function getCor(valor, total, meta) {
   if (valor === 0) return "red";
   if (total >= meta) return "green";
   return "yellow";
 }
 
-// ✏️ ATUALIZAR VALOR
+// ATUALIZAR
 window.atualizarValor = async function(id, campo, valor) {
   await updateDoc(doc(db, "membros", id), {
     [campo]: Number(valor)
@@ -145,13 +216,11 @@ window.atualizarValor = async function(id, campo, valor) {
   carregarMembros();
 };
 
-// 📊 TABELA
+// TABELA
 async function carregarMembros() {
   const querySnapshot = await getDocs(collection(db, "membros"));
 
-  let html = "";
-
-  html += montarTabela("MEMBROS", "membro", querySnapshot);
+  let html = montarTabela("MEMBROS", "membro", querySnapshot);
   html += montarTabela("ELITE", "elite", querySnapshot);
 
   document.getElementById("tabela").innerHTML = html;
@@ -194,17 +263,14 @@ function montarTabela(titulo, tipoFiltro, querySnapshot) {
     html += `<td class="${corTotal}">${total}</td>`;
 
     html += `<td>
-      <button class="remove-btn" onclick="removerMembro('${id}')">X</button>
-    </td>`;
-
-    html += `</tr>`;
+      <button onclick="removerMembro('${id}','${d.nome}')">X</button>
+    </td></tr>`;
   });
 
   html += "</table>";
   return html;
 }
 
-// 🚀 INICIAR
 carregarMembros();
 </script>
 
