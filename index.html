@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>FOUR7 SYSTEM</title>
+<title>FOUR7 SYSTEM</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 body {
@@ -22,7 +22,7 @@ button {
   background: #0a0a0a;
   border: 1px solid #ff003c;
   color: #ff003c;
-  padding: 10px 20px;
+  padding: 10px;
   cursor: pointer;
   box-shadow: 0 0 10px #ff003c;
 }
@@ -45,9 +45,7 @@ th, td {
   border: 1px solid #111;
 }
 
-th {
-  color: #ff003c;
-}
+th { color: #ff003c; }
 
 input {
   background: transparent;
@@ -57,34 +55,56 @@ input {
   text-align: center;
 }
 
-/* CORES */
+/* cores */
 .red { background: #220000; }
 .yellow { background: #332200; }
 .green { background: #002200; }
 
-/* LINHA COMPLETA */
+/* linha completa */
 .linha-verde td {
   background: #002200 !important;
 }
 
-/* LOGIN */
-#loginScreen {
+/* barra progresso */
+.barra {
+  height: 6px;
+  background: #111;
+  margin-top: 4px;
+}
+
+.barra-fill {
+  height: 100%;
+  background: #ff003c;
+}
+
+/* modais */
+.modal {
   position: fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:#000;
-  display:flex;
+  top:0;left:0;
+  width:100%;height:100%;
+  background: rgba(0,0,0,0.85);
+  display:none;
   justify-content:center;
   align-items:center;
 }
 
-.login-box {
+.modal-content {
   background:#050505;
   border:1px solid #ff003c;
-  padding:30px;
+  padding:25px;
   box-shadow:0 0 20px #ff003c;
+  width:300px;
+}
+
+/* login */
+#loginScreen {
+  position: fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:#000;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
 </style>
 </head>
@@ -92,12 +112,12 @@ input {
 <body>
 
 <div id="loginScreen">
-  <div class="login-box">
+  <div class="modal-content">
     <h2 style="color:#ff003c;">FOUR7 ACCESS</h2>
     <input type="password" id="senhaInput" placeholder="Senha">
     <br><br>
     <button onclick="verificarSenha()">Entrar</button>
-    <p id="erro" style="color:red; display:none;">Senha incorreta</p>
+    <p id="erro" style="color:red;display:none;">Senha incorreta</p>
   </div>
 </div>
 
@@ -107,11 +127,22 @@ input {
 
 <div id="tabela"></div>
 
+<!-- ADD -->
 <div class="modal" id="modal">
   <div class="modal-content">
+    <h3>Adicionar</h3>
     <input type="text" id="nome" placeholder="Nome">
     <button onclick="salvarMembro()">Salvar</button>
     <button onclick="fecharModal()">Cancelar</button>
+  </div>
+</div>
+
+<!-- REMOVE -->
+<div class="modal" id="modalRemover">
+  <div class="modal-content">
+    <h3 id="textoRemover"></h3>
+    <button onclick="confirmarRemocao()">Remover</button>
+    <button onclick="fecharRemover()">Cancelar</button>
   </div>
 </div>
 
@@ -120,9 +151,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const app = initializeApp({
-  apiKey: "AIzaSyDO-yQntq0yqyLQvM4cCPt0Ap7ZwuffwP4",
-  authDomain: "controle-cpx.firebaseapp.com",
-  projectId: "controle-cpx"
+  apiKey:"AIzaSyDO-yQntq0yqyLQvM4cCPt0Ap7ZwuffwP4",
+  authDomain:"controle-cpx.firebaseapp.com",
+  projectId:"controle-cpx"
 });
 
 const db = getFirestore(app);
@@ -130,52 +161,85 @@ const db = getFirestore(app);
 const META = 4500;
 const SENHA = "resplav2671";
 
-window.verificarSenha = function() {
-  if (senhaInput.value === SENHA) {
-    loginScreen.style.display = "none";
-  } else {
-    erro.style.display = "block";
-  }
+/* LOGIN */
+window.verificarSenha = () => {
+  if(senhaInput.value === SENHA){
+    loginScreen.style.display="none";
+  } else erro.style.display="block";
 };
 
-window.abrirModal = () => modal.style.display = "flex";
-window.fecharModal = () => modal.style.display = "none";
+/* MODAL */
+window.abrirModal=()=>modal.style.display="flex";
+window.fecharModal=()=>modal.style.display="none";
 
-window.salvarMembro = async function () {
-  if (!nome.value) return;
+/* REMOVER */
+let idParaRemover=null;
 
-  await addDoc(collection(db, "membros"), {
-    nome: nome.value,
-    seg:0, ter:0, qua:0, qui:0, sex:0, sab:0, dom:0
+window.removerMembro=(id,nome)=>{
+  idParaRemover=id;
+  textoRemover.innerText="Remover "+nome+"?";
+  modalRemover.style.display="flex";
+};
+
+window.fecharRemover=()=>modalRemover.style.display="none";
+
+window.confirmarRemocao=async()=>{
+  if(!idParaRemover)return;
+  await deleteDoc(doc(db,"membros",idParaRemover));
+  fecharRemover();
+  carregarMembros();
+};
+
+/* SALVAR */
+window.salvarMembro=async()=>{
+  if(!nome.value)return;
+
+  await addDoc(collection(db,"membros"),{
+    nome:nome.value,
+    seg:0,ter:0,qua:0,qui:0,sex:0,sab:0,dom:0
   });
 
   fecharModal();
   carregarMembros();
 };
 
-window.removerMembro = async function(id){
-  await deleteDoc(doc(db, "membros", id));
-  carregarMembros();
-};
-
-window.atualizarValor = async function(id, campo, valor) {
-  await updateDoc(doc(db, "membros", id), {
-    [campo]: Number(valor)
+/* ATUALIZAR */
+window.atualizarValor=async(id,campo,valor)=>{
+  await updateDoc(doc(db,"membros",id),{
+    [campo]:Number(valor)
   });
   carregarMembros();
 };
 
+/* COR */
 function getCor(valor){
-  if (valor === 0) return "red";
-  if (valor >= 600) return "green";
-  return "yellow";
+  if(valor===0)return"red";
+  if(valor>=600)return"green";
+  return"yellow";
 }
 
-async function carregarMembros() {
-  const querySnapshot = await getDocs(collection(db, "membros"));
+/* CARREGAR */
+async function carregarMembros(){
+  const snap=await getDocs(collection(db,"membros"));
 
-  let html = `<table>
+  let lista=[];
+
+  snap.forEach(docSnap=>{
+    const d=docSnap.data();
+    const dias=["seg","ter","qua","qui","sex","sab","dom"];
+
+    let total=0;
+    dias.forEach(dia=>total+=d[dia]||0);
+
+    lista.push({id:docSnap.id,...d,total});
+  });
+
+  /* ranking */
+  lista.sort((a,b)=>b.total-a.total);
+
+  let html=`<table>
   <tr>
+    <th>#</th>
     <th>Nome</th>
     <th>Seg</th><th>Ter</th><th>Qua</th><th>Qui</th>
     <th>Sex</th><th>Sab</th><th>Dom</th>
@@ -183,35 +247,37 @@ async function carregarMembros() {
     <th>Ação</th>
   </tr>`;
 
-  querySnapshot.forEach((docSnap) => {
-    const d = docSnap.data();
-    const id = docSnap.id;
-    const dias = ["seg","ter","qua","qui","sex","sab","dom"];
+  lista.forEach((d,index)=>{
+    const dias=["seg","ter","qua","qui","sex","sab","dom"];
 
-    let total = 0;
-    dias.forEach(dia => total += (d[dia] || 0));
+    let linhaClasse=d.total>=META?"linha-verde":"";
 
-    let linhaClasse = total >= META ? "linha-verde" : "";
+    html+=`<tr class="${linhaClasse}">
+    <td>${index+1}</td>
+    <td>${d.nome}
+      <div class="barra">
+        <div class="barra-fill" style="width:${Math.min((d.total/META)*100,100)}%"></div>
+      </div>
+    </td>`;
 
-    html += `<tr class="${linhaClasse}"><td>${d.nome}</td>`;
+    dias.forEach(dia=>{
+      const valor=d[dia]||0;
+      const cor=d.total>=META?"":getCor(valor);
 
-    dias.forEach(dia => {
-      const valor = d[dia] || 0;
-      const cor = total >= META ? "" : getCor(valor);
-
-      html += `<td class="${cor}">
-        <input type="number" value="${valor}"
-        onchange="atualizarValor('${id}','${dia}', this.value)">
+      html+=`<td class="${cor}">
+      <input type="number" value="${valor}"
+      onchange="atualizarValor('${d.id}','${dia}',this.value)">
       </td>`;
     });
 
-    html += `<td>${total}</td>
-    <td><button onclick="removerMembro('${id}')">X</button></td></tr>`;
+    html+=`<td>${d.total}</td>
+    <td><button onclick="removerMembro('${d.id}','${d.nome}')">X</button></td>
+    </tr>`;
   });
 
-  html += "</table>";
+  html+="</table>";
 
-  document.getElementById("tabela").innerHTML = html;
+  tabela.innerHTML=html;
 }
 
 carregarMembros();
