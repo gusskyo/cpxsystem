@@ -1,145 +1,99 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>CPX SYSTEM</title>
+  <title>FOUR7 SYSTEM</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 
-  <style>
-    body {
-      background: #000;
-      color: white;
-      font-family: 'Orbitron', sans-serif;
-      text-align: center;
-    }
+<style>
+body {
+  background: #000;
+  color: white;
+  font-family: 'Orbitron', sans-serif;
+  text-align: center;
+}
 
-    h1 {
-      color: #ff0077;
-      text-shadow: 0 0 15px #ff0077;
-    }
+h1 {
+  color: #ff003c;
+  text-shadow: 0 0 15px #ff003c;
+}
 
-    button {
-      background: #0a0a0a;
-      border: 1px solid #ff0077;
-      color: #ff0077;
-      padding: 10px 20px;
-      cursor: pointer;
-      box-shadow: 0 0 10px #ff0077;
-      margin: 5px;
-    }
+button {
+  background: #0a0a0a;
+  border: 1px solid #ff003c;
+  color: #ff003c;
+  padding: 10px 20px;
+  cursor: pointer;
+  box-shadow: 0 0 10px #ff003c;
+}
 
-    button:hover {
-      background: #ff0077;
-      color: black;
-    }
+button:hover {
+  background: #ff003c;
+  color: black;
+}
 
-    table {
-      margin: 20px auto;
-      border-collapse: collapse;
-      width: 95%;
-      background: #050505;
-      box-shadow: 0 0 15px #ff0077;
-    }
+table {
+  margin: 20px auto;
+  border-collapse: collapse;
+  width: 95%;
+  background: #050505;
+  box-shadow: 0 0 15px #ff003c;
+}
 
-    th, td {
-      padding: 8px;
-      border: 1px solid #111;
-    }
+th, td {
+  padding: 8px;
+  border: 1px solid #111;
+}
 
-    th {
-      color: #ff0077;
-    }
+th {
+  color: #ff003c;
+}
 
-    input {
-      background: transparent;
-      border: none;
-      color: white;
-      width: 60px;
-      text-align: center;
-    }
+input {
+  background: transparent;
+  border: none;
+  color: white;
+  width: 60px;
+  text-align: center;
+}
 
-    .red { background: #220000; }
-    .yellow { background: #332200; }
-    .green { background: #002200; }
+/* CORES */
+.red { background: #220000; }
+.yellow { background: #332200; }
+.green { background: #002200; }
 
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.85);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9998;
-    }
+/* LINHA COMPLETA */
+.linha-verde td {
+  background: #002200 !important;
+}
 
-    .modal-content {
-      background: #050505;
-      border: 1px solid #ff0077;
-      padding: 25px;
-      box-shadow: 0 0 20px #ff0077;
-      width: 300px;
-    }
+/* LOGIN */
+#loginScreen {
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:#000;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
 
-    .modal input, .modal select {
-      width: 100%;
-      margin: 10px 0;
-      padding: 8px;
-      background: black;
-      border: 1px solid #ff0077;
-      color: white;
-    }
-
-    .cancelar {
-      background: #111;
-      color: #ff0077;
-      border: 1px solid #ff0077;
-    }
-
-    .cancelar:hover {
-      background: #ff0077;
-      color: black;
-    }
-
-    #loginScreen {
-      position: fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
-      background:#000;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      z-index:9999;
-    }
-
-    .login-box {
-      background:#050505;
-      border:1px solid #ff0077;
-      padding:30px;
-      box-shadow:0 0 20px #ff0077;
-    }
-
-    .login-box input {
-      margin-top:10px;
-      padding:10px;
-      background:black;
-      border:1px solid #ff0077;
-      color:white;
-      width:200px;
-    }
-  </style>
+.login-box {
+  background:#050505;
+  border:1px solid #ff003c;
+  padding:30px;
+  box-shadow:0 0 20px #ff003c;
+}
+</style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
-    <h2 style="color:#ff0077;">CPX ACCESS</h2>
+    <h2 style="color:#ff003c;">FOUR7 ACCESS</h2>
     <input type="password" id="senhaInput" placeholder="Senha">
     <br><br>
     <button onclick="verificarSenha()">Entrar</button>
@@ -147,32 +101,17 @@
   </div>
 </div>
 
-<h1>CPX SYSTEM</h1>
+<h1>FOUR7 SYSTEM</h1>
 
 <button onclick="abrirModal()">+ ADICIONAR</button>
 
 <div id="tabela"></div>
 
-<!-- MODAL ADICIONAR -->
 <div class="modal" id="modal">
   <div class="modal-content">
-    <h3>Adicionar Membro</h3>
     <input type="text" id="nome" placeholder="Nome">
-    <select id="tipo">
-      <option value="membro">Membro</option>
-      <option value="elite">Elite</option>
-    </select>
     <button onclick="salvarMembro()">Salvar</button>
-    <button class="cancelar" onclick="fecharModal()">Cancelar</button>
-  </div>
-</div>
-
-<!-- MODAL REMOVER -->
-<div class="modal" id="modalRemover">
-  <div class="modal-content">
-    <h3 id="textoRemover"></h3>
-    <button onclick="confirmarRemocao()">Remover</button>
-    <button class="cancelar" onclick="fecharRemover()">Cancelar</button>
+    <button onclick="fecharModal()">Cancelar</button>
   </div>
 </div>
 
@@ -180,80 +119,44 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-const firebaseConfig = {
+const app = initializeApp({
   apiKey: "AIzaSyDO-yQntq0yqyLQvM4cCPt0Ap7ZwuffwP4",
   authDomain: "controle-cpx.firebaseapp.com",
   projectId: "controle-cpx"
-};
+});
 
-const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+const META = 4500;
 const SENHA = "resplav2671";
 
 window.verificarSenha = function() {
-  const senha = document.getElementById("senhaInput").value;
-  if (senha === SENHA) {
-    document.getElementById("loginScreen").style.display = "none";
+  if (senhaInput.value === SENHA) {
+    loginScreen.style.display = "none";
   } else {
-    document.getElementById("erro").style.display = "block";
+    erro.style.display = "block";
   }
 };
 
-window.abrirModal = () => document.getElementById("modal").style.display = "flex";
-window.fecharModal = () => document.getElementById("modal").style.display = "none";
-window.fecharRemover = () => document.getElementById("modalRemover").style.display = "none";
+window.abrirModal = () => modal.style.display = "flex";
+window.fecharModal = () => modal.style.display = "none";
 
 window.salvarMembro = async function () {
-  const nome = document.getElementById("nome").value;
-  const tipo = document.getElementById("tipo").value;
-
-  if (!nome) return;
-
-  let meta = tipo === "elite" ? 2500000 : 10000;
+  if (!nome.value) return;
 
   await addDoc(collection(db, "membros"), {
-    nome,
-    tipo,
-    meta,
-    seg: 0,
-    ter: 0,
-    qua: 0,
-    qui: 0,
-    sex: 0,
-    sab: 0,
-    dom: 0
+    nome: nome.value,
+    seg:0, ter:0, qua:0, qui:0, sex:0, sab:0, dom:0
   });
 
   fecharModal();
   carregarMembros();
 };
 
-let idParaRemover = null;
-
-window.removerMembro = function(id, nome) {
-  idParaRemover = id;
-  document.getElementById("textoRemover").innerText = "Remover " + nome + "?";
-  document.getElementById("modalRemover").style.display = "flex";
-};
-
-window.confirmarRemocao = async function() {
-  if (!idParaRemover) return;
-  await deleteDoc(doc(db, "membros", idParaRemover));
-  fecharRemover();
+window.removerMembro = async function(id){
+  await deleteDoc(doc(db, "membros", id));
   carregarMembros();
 };
-
-// 🎨 NOVA REGRA DE COR POR DIA
-function getCor(valor, tipo) {
-  if (valor === 0) return "red";
-
-  const metaDia = tipo === "elite" ? 500000 : 2000;
-
-  if (valor >= metaDia) return "green";
-
-  return "yellow";
-}
 
 window.atualizarValor = async function(id, campo, valor) {
   await updateDoc(doc(db, "membros", id), {
@@ -262,18 +165,17 @@ window.atualizarValor = async function(id, campo, valor) {
   carregarMembros();
 };
 
+function getCor(valor){
+  if (valor === 0) return "red";
+  if (valor >= 600) return "green";
+  return "yellow";
+}
+
 async function carregarMembros() {
   const querySnapshot = await getDocs(collection(db, "membros"));
 
-  let html = montarTabela("MEMBROS", "membro", querySnapshot);
-  html += montarTabela("ELITE", "elite", querySnapshot);
-
-  document.getElementById("tabela").innerHTML = html;
-}
-
-function montarTabela(titulo, tipoFiltro, querySnapshot) {
-  let html = `<h2>${titulo}</h2><table>`;
-  html += `<tr>
+  let html = `<table>
+  <tr>
     <th>Nome</th>
     <th>Seg</th><th>Ter</th><th>Qua</th><th>Qui</th>
     <th>Sex</th><th>Sab</th><th>Dom</th>
@@ -283,19 +185,19 @@ function montarTabela(titulo, tipoFiltro, querySnapshot) {
 
   querySnapshot.forEach((docSnap) => {
     const d = docSnap.data();
-    if (d.tipo !== tipoFiltro) return;
-
     const id = docSnap.id;
     const dias = ["seg","ter","qua","qui","sex","sab","dom"];
 
     let total = 0;
     dias.forEach(dia => total += (d[dia] || 0));
 
-    html += `<tr><td>${d.nome}</td>`;
+    let linhaClasse = total >= META ? "linha-verde" : "";
+
+    html += `<tr class="${linhaClasse}"><td>${d.nome}</td>`;
 
     dias.forEach(dia => {
       const valor = d[dia] || 0;
-      const cor = getCor(valor, d.tipo);
+      const cor = total >= META ? "" : getCor(valor);
 
       html += `<td class="${cor}">
         <input type="number" value="${valor}"
@@ -303,17 +205,13 @@ function montarTabela(titulo, tipoFiltro, querySnapshot) {
       </td>`;
     });
 
-    const corTotal = total >= d.meta ? "green" : "yellow";
-
-    html += `<td class="${corTotal}">${total}</td>`;
-
-    html += `<td>
-      <button onclick="removerMembro('${id}','${d.nome}')">X</button>
-    </td></tr>`;
+    html += `<td>${total}</td>
+    <td><button onclick="removerMembro('${id}')">X</button></td></tr>`;
   });
 
   html += "</table>";
-  return html;
+
+  document.getElementById("tabela").innerHTML = html;
 }
 
 carregarMembros();
